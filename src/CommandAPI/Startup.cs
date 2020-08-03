@@ -5,12 +5,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using CommandAPI.Models;
 using Npgsql;
+using Microsoft.OpenApi.Models;
 
 namespace CommandAPI
 {
@@ -31,11 +33,21 @@ namespace CommandAPI
             services.AddDbContext<CommandContext> (opt => opt.UseNpgsql(builder.ConnectionString));
 
             services.AddControllers();
+
+            services.AddSwaggerGen(c=> {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Command API", Version = "v1" });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseSwagger();
+
+            app.UseSwaggerUI( c=> {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Command API V1");
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
